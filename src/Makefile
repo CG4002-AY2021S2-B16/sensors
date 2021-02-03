@@ -16,7 +16,7 @@ ARDMK_DIR         = $(PROJECT_DIR)/Arduino-Makefile
 ### For Arduino IDE 1.0.x
 # ARDUINO_DIR       = /Applications/Arduino.app/Contents/Resources/Java
 ### For Arduino IDE 1.6.x ++
-ARDUINO_DIR       = /Applications/Arduino.app/Contents/Java
+ARDUINO_DIR       = /usr/share/arduino
 
 ### USER_LIB_PATH
 ### Path to where the your project's libraries are stored.
@@ -34,7 +34,7 @@ BOARD_SUB         = atmega328p
 
 ### MONITOR_PORT
 ### The port your board is connected to. Using an '*' tries all the ports and finds the right one.
-MONITOR_PORT      = /dev/tty.usbmodem*
+MONITOR_PORT      = /dev/ttyACM0
 
 ### MONITOR_BAUDRATE
 ### It must be set to Serial baudrate value you are using.
@@ -42,11 +42,11 @@ MONITOR_BAUDRATE  = 115200
 
 ### AVR_TOOLS_DIR
 ### Path to the AVR tools directory such as avr-gcc, avr-g++, etc.
-AVR_TOOLS_DIR     = /usr/local
+AVR_TOOLS_DIR     = /usr
 
 ### AVRDUDE
 ### Path to avrdude directory.
-AVRDUDE           = /usr/local/bin/avrdude
+AVRDUDE           = /usr/bin/avrdude
 AVRDUDE_OPTS      = -v -v
 
 ### CFLAGS_STD
