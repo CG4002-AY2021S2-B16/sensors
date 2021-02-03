@@ -5,13 +5,13 @@
 #include "MPU6050.h"
 #include "CommsInt.h"
 
-// CONSTANTS
-#define X_GYRO_OFFSET 0
-#define Y_GYRO_OFFSET 0
-#define Z_GYRO_OFFSET 0
-#define X_ACCEL_OFFSET 0
-#define Y_ACCEL_OFFSET 0
-#define Z_ACCEL_OFFSET 0
+// CONSTANTS bluno 3
+#define X_GYRO_OFFSET -792 //-976
+#define Y_GYRO_OFFSET -2441 // -6527
+#define Z_GYRO_OFFSET 1544 //988
+#define X_ACCEL_OFFSET 143 //-52
+#define Y_ACCEL_OFFSET 5 // -17
+#define Z_ACCEL_OFFSET 33 //-24
 
 MPU6050 imuSensor;
 
@@ -34,32 +34,30 @@ void setup()
   Wire.begin();
 
   Serial.begin(115200);
-  Serial.println("Initializing I2C devices...");
+  while (!Serial);
+  Serial.flush();
   imuSensor.initialize();
-
-  Serial.println("Testing device connections...");
-
   if (!imuSensor.testConnection())
   {
     Serial.println("MPU6050 connection failed!");
   }
-
-  Serial.println("MPU6050 connection successful");
 }
+
 
 void loop()
 {
-  imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
-  Serial.print(accelX);
-  Serial.print(" ");
-  Serial.print(accelY);
-  Serial.print(" ");
-  Serial.print(accelZ);
-  Serial.print(" ");
-  Serial.print(gyroX);
-  Serial.print(" ");
-  Serial.print(gyroY);
-  Serial.print(" ");
-  Serial.print(gyroZ);
-  Serial.print("\n");
+  receiveData();
+
+  if (new_handshake_req)
+  {
+    handshakeResponse();
+    handshake_done = true;
+  }
+  else if (handshake_done)
+  {
+    imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
+    dataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+  }
+
+  delay(7); // Seems to give 140 correct packets/sec (20 bytes of usable data each), we use this as baseline. Theoretical limit is around 350 packets/sec at 115200 bps
 }

@@ -80,7 +80,7 @@ void handshakeResponse()
 }
 
 // dataResponse prepares the data to be sent out
-void dataResponse()
+void dataResponse(int16_t X, int16_t Y, int16_t Z, int16_t pitch, int16_t yaw, int16_t roll)
 {
   // Pre-process
   val -= 1;
@@ -89,7 +89,7 @@ void dataResponse()
 
   // Process
   *buf = DATA_RESPONSE;
-  char *done = addDataToBuffer(++buf, val, val - 1, val - 2, val - 3, val - 4, val - 5);
+  char *done = addDataToBuffer(++buf, X, Y, Z, pitch, yaw, roll);
 
   // Checksum
   fillChecksum();
