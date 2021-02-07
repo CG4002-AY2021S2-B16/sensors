@@ -87,7 +87,7 @@ uint8_t* addLongToBuffer(uint8_t* start, uint32_t x) {
 
 
 // Adds 16-bit IMU data to the buffer 
-uint8_t* addIMUDataToBuffer(uint8_t* next, uint16_t x, uint16_t y, uint16_t z, uint16_t yaw, uint16_t pitch, uint16_t roll) {
+uint8_t* addIMUDataToBuffer(uint8_t* next, uint16_t x, uint16_t y, uint16_t z, uint16_t pitch, uint16_t yaw, uint16_t roll) {
   next = addIntToBuffer(next, x);
   next = addIntToBuffer(next, y);
   next = addIntToBuffer(next, z);
@@ -151,7 +151,7 @@ void handshakeResponse() {
 
 
 // dataResponse prepares the data to be sent out
-void dataResponse() {
+void dataResponse(int16_t X, int16_t Y, int16_t Z, int16_t pitch, int16_t yaw, int16_t roll) {
   // Pre-process
   val -= 1;
   clearSendBuffer();
@@ -159,7 +159,7 @@ void dataResponse() {
   
   // Fill different sections of the buffer
   buf = addLongToBuffer(buf, calculateTimestamp());
-  buf = addIMUDataToBuffer(buf, val, val-1, val-2, val-3, val-4, val-5);
+  buf = addIMUDataToBuffer(buf, X, Y, Z, yaw, pitch, roll);
 
   uint8_t* partial = (muscle_sensor_active)? addMuscleSensorDataToBuffer(buf, 512) : addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
   buf = setDataPacketTypeToBuffer(partial);
