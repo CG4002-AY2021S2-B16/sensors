@@ -18,7 +18,7 @@ uint8_t* addMuscleSensorDataToBuffer(uint8_t* next, uint16_t ms_val);
 uint8_t* setDataPacketTypeToBuffer(uint8_t* next);
 uint8_t* setAckPacketTypeToBuffer(uint8_t* next);
 void handshakeResponse();
-void dataResponse(int16_t X, int16_t Y, int16_t Z, int16_t pitch, int16_t yaw, int16_t roll);
+void dataResponse(int16_t x, int16_t y, int16_t z, int16_t pitch, int16_t yaw, int16_t roll);
 void receiveData();
 
 #endif

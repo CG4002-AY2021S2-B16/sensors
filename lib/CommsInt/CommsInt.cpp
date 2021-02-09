@@ -6,7 +6,10 @@
 
 // Packet masks
 #define DESIGNATE_DATA_PACKET_MASK 0x0C // 0b0000 1100, To be ORed with
-#define DESIGNATE_ACK_PACKET_MASK 0xF3  // 0b1111 0011 To be ANDed with
+#define DESIGNATE_ACK_PACKET_MASK 0xF3  // 0b1111 0011, To be ANDed with
+
+// Handshake constants
+#define HANDSHAKE_INIT 'A'
 
 // Define global variables
 uint8_t receivedChar;
@@ -17,14 +20,8 @@ boolean muscle_sensor_active = false;
 // Time
 uint32_t start_time = millis();
 
-// Handshake constants
-uint8_t HANDSHAKE_INIT = 'A';
-
 // Buffer used to write to bluetooth
 uint8_t sendBuffer[PACKET_SIZE];
-
-// Dummy data value
-uint16_t val = 65535; //FFFE
 
 
 /* ---------------------------------
@@ -138,7 +135,7 @@ void handshakeResponse() {
   
   // Fill different sections of the buffer
   buf = addLongToBuffer(buf, calculateTimestamp());
-  buf = addIMUDataToBuffer(buf, val, val-1, val-2, val-3, val-4, val-5);
+  buf = addIMUDataToBuffer(buf, 0, -0, 32767, -32768, 100, -100); // Arbitrary values to verify signed int16 transmission integrity
 
   uint8_t* partial = addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
   buf = setAckPacketTypeToBuffer(partial);
@@ -155,15 +152,14 @@ void handshakeResponse() {
 // Rotation about X axis = pitch
 // Rotation about Y axis = roll
 // Rotation about Z axis = yaw
-void dataResponse(int16_t X, int16_t Y, int16_t Z, int16_t pitch, int16_t roll, int16_t yaw) {
+void dataResponse(int16_t x, int16_t y, int16_t z, int16_t pitch, int16_t roll, int16_t yaw) {
   // Pre-process
-  val -= 1;
   clearSendBuffer();
   uint8_t* buf = sendBuffer;
   
   // Fill different sections of the buffer
   buf = addLongToBuffer(buf, calculateTimestamp());
-  buf = addIMUDataToBuffer(buf, X, Y, Z, pitch, roll, yaw);
+  buf = addIMUDataToBuffer(buf, x, y, z, pitch, roll, yaw);
 
   uint8_t* partial = (muscle_sensor_active)? addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL - 1) : addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
   buf = setDataPacketTypeToBuffer(partial);
