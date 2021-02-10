@@ -34,6 +34,7 @@ void setup()
   // Initialize the i2c wire connection
   Wire.begin();
 
+  prepareAES();
   Serial.begin(115200);
   delay(1000);
 
