@@ -22,6 +22,8 @@ ARDUINO_DIR       = /usr/share/arduino
 ### Path to where the your project's libraries are stored.
 USER_LIB_PATH    :=  $(PROJECT_DIR)/lib
 
+ARDUINO_LIBS	  =  Crypto Crypto/utility CommsInt I2Cdev MPU6050 Wire Wire/utility Fallback
+
 ### BOARD_TAG & BOARD_SUB
 ### For Arduino IDE 1.0.x
 ### Only BOARD_TAG is needed. It must be set to the board you are currently using. (i.e uno, mega2560, etc.)

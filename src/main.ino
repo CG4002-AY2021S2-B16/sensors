@@ -23,6 +23,7 @@ void setup()
   digitalWrite(ONBOARD_LED, HIGH);
   Wire.begin();
 
+  prepareAES();
   Serial.begin(115200);
   delay(1000);
 
