@@ -5,6 +5,9 @@
 #include "MPU6050.h"
 #include "CommsInt.h"
 
+#define ONBOARD_LED 13
+#define EMG_PIN A0
+
 MPU6050 imuSensor;
 
 int16_t accelX, accelY, accelZ;
@@ -13,6 +16,11 @@ int16_t gyroX, gyroY, gyroZ;
 void setup()
 {
   // Initialize the i2c wire connection
+  pinMode(ONBOARD_LED, OUTPUT);
+  pinMode(EMG_PIN, INPUT);
+
+  // Indicate the start of initializing
+  digitalWrite(ONBOARD_LED, HIGH);
   Wire.begin();
 
   Serial.begin(115200);
@@ -23,9 +31,12 @@ void setup()
   {
     Serial.println("MPU6050 connection failed!");
   }
-
-  imuSensor.CalibrateAccel(10);
-  imuSensor.CalibrateGyro(10);
+  else
+  {
+    imuSensor.CalibrateAccel(10);
+    imuSensor.CalibrateGyro(10);
+    digitalWrite(ONBOARD_LED, LOW);
+  }
 }
 
 void loop()
