@@ -149,16 +149,14 @@ bool AES128::setKey(const uint8_t *key, size_t len)
  * This constructor must be followed by a call to setKey() before the
  * block cipher can be used for encryption or decryption.
  */
-
 AESTiny128::AESTiny128()
 {
 }
 
-// AESTiny128::~AESTiny128()
-// {
-//     clean(schedule);
-// }
-
+AESTiny128::~AESTiny128()
+{
+    clean(schedule);
+}
 
 /**
  * \brief Size of an AES block in bytes.

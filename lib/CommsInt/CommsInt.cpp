@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "CommsInt.h"
-#include "../Crypto/src/Crypto.h"
-#include "../Crypto/src/AES.h"
+#include "../Crypto/Crypto.h"
+#include "../Crypto/AES.h"
 
 // Packet Specification
 #define PACKET_SIZE 19
