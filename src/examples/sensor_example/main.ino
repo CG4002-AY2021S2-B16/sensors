@@ -5,6 +5,9 @@
 #include "MPU6050.h"
 #include "CommsInt.h"
 
+#include "arduinoFFT.h"
+#include "EMG.h"
+
 #define ONBOARD_LED 13
 #define EMG_PIN A0
 #define IMU_INT_PIN A1
@@ -22,6 +25,11 @@ MPU6050 imuSensor;
 
 int16_t accelX, accelY, accelZ;
 int16_t gyroX, gyroY, gyroZ;
+double maxSensorReading;
+double meanSensorReading;
+double rmsSensorReading;
+double meanSensorFreq;
+
 bool isMotionDetected;
 
 void setup()
@@ -49,6 +57,8 @@ void setup()
     imuSensor.setZeroMotionDetectionThreshold(ZERO_MOTION_THRESHOLD);
     imuSensor.setZeroMotionDetectionDuration(ZERO_MOTION_DURATION);
 
+    setupFrequencyArr();
+
     // Indicate the end of initializing
     digitalWrite(ONBOARD_LED, LOW);
   }
@@ -66,20 +76,43 @@ void setup()
 
 void loop()
 {
-  isMotionDetected = imuSensor.getZeroMotionDetected();
+  isMotionDetected = !imuSensor.getZeroMotionDetected();
   imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
-  if (!isMotionDetected)
+  readEMGData(analogRead(EMG_PIN));
+  if (sampleCount >= EMG_SAMPLE_SIZE)
   {
+    processEMG(&maxSensorReading, &meanSensorReading, &rmsSensorReading, &meanSensorFreq);
+    Serial.print("maxSensorVal:");
+    Serial.print(maxSensorReading);
+    Serial.print(' ');
+    Serial.print("meanSensorVal:");
+    Serial.print(meanSensorReading);
+    Serial.print(' ');
+    Serial.print("rmsSensorVal:");
+    Serial.print(rmsSensorReading);
+    Serial.print(' ');
+    Serial.print("meanSensorFreq:");
+    Serial.println(meanSensorFreq);
+  }
+
+  if (isMotionDetected)
+  {
+    Serial.print("Accel_X:");
     Serial.print(accelX / RAW_TO_MS_2);
     Serial.print(' ');
+    Serial.print("Accel_Y:");
     Serial.print(accelY / RAW_TO_MS_2);
     Serial.print(' ');
+    Serial.print("Accel_Z:");
     Serial.print(accelZ / RAW_TO_MS_2);
     Serial.print(' ');
+    Serial.print("Gyro_X:");
     Serial.print(gyroX / RAW_TO_DEG_S_2);
     Serial.print(' ');
+    Serial.print("Gyro_Y:");
     Serial.print(gyroY / RAW_TO_DEG_S_2);
     Serial.print(' ');
+    Serial.print("Gyro_Z:");
     Serial.println(gyroZ / RAW_TO_DEG_S_2);
   }
 }
