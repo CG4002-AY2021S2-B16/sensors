@@ -80,10 +80,10 @@ void loop()
   else if (handshake_done)
   {
     imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
-    if (isMotionDetected)
-    {
-      dataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
-    }
+    // if (isMotionDetected)
+    // {
+    dataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+    // }
   }
 
   delay(20);
