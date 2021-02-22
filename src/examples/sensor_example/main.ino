@@ -47,7 +47,7 @@ void setup()
     imuSensor.setFullScaleGyroRange(GYRO_RANGE);
     // Detection of Zero Motion
     imuSensor.setZeroMotionDetectionThreshold(ZERO_MOTION_THRESHOLD);
-    imuSensor.setZeroMotionDetectionDuration(ZERO_MOTION_THRESHOLD);
+    imuSensor.setZeroMotionDetectionDuration(ZERO_MOTION_DURATION);
 
     // Indicate the end of initializing
     digitalWrite(ONBOARD_LED, LOW);
