@@ -23,8 +23,7 @@ void setup()
   digitalWrite(ONBOARD_LED, HIGH);
   Wire.begin();
 
-  Serial.begin(115200);
-  delay(1000);
+  prepareAES();
 
   imuSensor.initialize();
   if (!imuSensor.testConnection())
@@ -37,6 +36,9 @@ void setup()
     imuSensor.CalibrateGyro(10);
     digitalWrite(ONBOARD_LED, LOW);
   }
+
+  Serial.begin(115200);
+  delay(1000);
 }
 
 void loop()

@@ -1,5 +1,8 @@
 #include "Arduino.h"
 #include "CommsInt.h"
+#include "../Crypto/Crypto.h"
+#include "../Crypto/AES.h"
+
 // Packet Specification
 #define PACKET_SIZE 19
 #define MUSCLE_SENSOR_INVALID_VAL 1023
@@ -10,6 +13,18 @@
 
 // Handshake constants
 #define HANDSHAKE_INIT 'A'
+
+// Encryption
+#define AES_BLOCK_SIZE 16
+
+AESTiny128 aesTinyOne;
+BlockCipher *cipherOne = &aesTinyOne;
+
+AESTiny128 aesTinyTwo;
+BlockCipher *cipherTwo = &aesTinyTwo;
+
+const byte AESKeyStageOne[AES_BLOCK_SIZE] = {0x2A, 0x46, 0x2D, 0x4A, 0x61, 0x4E, 0x64, 0x52, 0x67, 0x55, 0x6A, 0x58, 0x6E, 0x32, 0x72, 0x35};
+const byte AESKeyStageTwo[AES_BLOCK_SIZE] = {0x7A, 0x24, 0x43, 0x26, 0x46, 0x29, 0x4A, 0x40, 0x4E, 0x63, 0x52, 0x66, 0x55, 0x6A, 0x57, 0x6E};
 
 // Define global variables
 uint8_t receivedChar;
@@ -35,6 +50,32 @@ void resetTimeOffset() {
 
 uint32_t calculateTimestamp() {
   return millis() - start_time;
+}
+
+
+/* ---------------------------------
+ *  ENCRYPTION FUNCTIONS
+ * ---------------------------------
+ */
+
+// prepareAES sets the keys for each cipher
+void prepareAES() {
+  crypto_feed_watchdog();
+  cipherOne->setKey(AESKeyStageOne, AES_BLOCK_SIZE);
+  cipherTwo->setKey(AESKeyStageTwo, AES_BLOCK_SIZE);
+}
+
+// encryptAES encrypts sixteen bytes using AES-ECB
+// It encrypts the sixteen bytes found from the start pointer
+void encryptAES(uint8_t* start) {
+  // Perform first encryption
+  crypto_feed_watchdog();
+  cipherOne->encryptBlock(start, start);
+
+  // Perform second encryption (currently, bytes 2 to 17 inclusive)
+  start += 2;
+  crypto_feed_watchdog();
+  cipherTwo->encryptBlock(start, start);
 }
 
 
@@ -140,6 +181,9 @@ void handshakeResponse() {
   uint8_t* partial = addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
   buf = setAckPacketTypeToBuffer(partial);
 
+  // Perform encryption
+  encryptAES(sendBuffer);
+
   // Calculate and fill in checksum
   setChecksum();
   
@@ -163,6 +207,9 @@ void dataResponse(int16_t x, int16_t y, int16_t z, int16_t pitch, int16_t roll, 
 
   uint8_t* partial = (muscle_sensor_active)? addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL - 1) : addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
   buf = setDataPacketTypeToBuffer(partial);
+
+  // Perform encryption
+  encryptAES(sendBuffer);
 
   // Calculate and fill in checksum
   setChecksum();

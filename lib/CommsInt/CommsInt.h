@@ -6,11 +6,14 @@ extern uint8_t receivedChar;
 extern boolean new_handshake_req;
 extern boolean handshake_done;
 extern boolean muscle_sensor_active;
+extern const byte AESKeyStageOne[];
+extern const byte AESKeyStageTwo[];
 
 void resetTimeOffset();
 uint32_t calculateTimestamp();
 void clearSendBuffer();
 void setChecksum();
+void prepareAES();
 uint8_t* addIntToBuffer(uint8_t* start, uint16_t x);
 uint8_t* addLongToBuffer(uint8_t* start, uint32_t x);
 uint8_t* addIMUDataToBuffer(uint8_t* next, uint16_t x, uint16_t y, uint16_t z, uint16_t pitch, uint16_t yaw, uint16_t roll);
