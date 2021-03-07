@@ -58,6 +58,7 @@ void setup()
     digitalWrite(ONBOARD_LED, LOW);
   }
 
+  Serial.begin(115200);
   delay(1000);
 }
 
