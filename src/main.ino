@@ -51,14 +51,17 @@ void setup()
 
     digitalWrite(ONBOARD_LED, LOW);
   }
-  else
+  else // Error connecting with MPU
   {
-    imuSensor.CalibrateAccel(10);
-    imuSensor.CalibrateGyro(10);
-    digitalWrite(ONBOARD_LED, LOW);
+    for (;;)
+    {
+      digitalWrite(ONBOARD_LED, HIGH);
+      delay(500);
+      digitalWrite(ONBOARD_LED, LOW);
+      delay(500);
+    }
   }
 
-  Serial.begin(115200);
   delay(1000);
 }
 
@@ -77,11 +80,18 @@ void loop()
   else if (handshake_done)
   {
     imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
+<<<<<<< HEAD
     if (isMotionDetected) {
       dataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
     } else if (checkLivenessPacketRequired()) {
       livenessResponse();
     }
+=======
+    // if (isMotionDetected)
+    // {
+    dataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+    // }
+>>>>>>> main
   }
 
   delay(20);
