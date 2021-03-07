@@ -81,9 +81,10 @@ void loop()
   else if (handshake_done)
   {
     imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
-    if (isMotionDetected)
-    {
+    if (isMotionDetected) {
       dataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+    } else if (checkLivenessPacketRequired()) {
+      livenessResponse();
     }
   }
 

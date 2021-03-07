@@ -9,10 +9,16 @@
 
 // Packet masks
 #define DESIGNATE_DATA_PACKET_MASK 0x0C // 0b0000 1100, To be ORed with
+#define DESIGNATE_DATA_PACKET_WITH_MUSCLE_SENSOR_MASK 0x08 // 0b0000 1000, To be ORed with
+
 #define DESIGNATE_ACK_PACKET_MASK 0xF3  // 0b1111 0011, To be ANDed with
+#define DESIGNATE_LIVENESS_PACKET_MASK 0x04 // To be ORed with
 
 // Handshake constants
 #define HANDSHAKE_INIT 'A'
+
+// Liveness constants
+#define LIVENESS_TIMEOUT 800 // Just below half of receiver-side timeout, so that 2 attempts can be made before reconnection happens
 
 // Encryption
 #define AES_BLOCK_SIZE 16
@@ -34,6 +40,7 @@ boolean muscle_sensor_active = false;
 
 // Time
 uint32_t start_time = millis();
+uint32_t last_packet_sent_at = millis();
 
 // Buffer used to write to bluetooth
 uint8_t sendBuffer[PACKET_SIZE];
@@ -50,6 +57,14 @@ void resetTimeOffset() {
 
 uint32_t calculateTimestamp() {
   return millis() - start_time;
+}
+
+void updateLastPacketSent() {
+  last_packet_sent_at = millis();
+}
+
+bool checkLivenessPacketRequired() {
+  return (millis() - last_packet_sent_at) >= LIVENESS_TIMEOUT;
 }
 
 
@@ -162,6 +177,12 @@ uint8_t* setAckPacketTypeToBuffer(uint8_t* next) {
   return next + 1;
 }
 
+// setLivenessPacketTypeToBuffer adds 2-bit packet type data to the buffer to designate as liveness packet
+uint8_t* setLivenessPacketTypeToBuffer(uint8_t* next) {
+  next[0] |= DESIGNATE_LIVENESS_PACKET_MASK;
+  return next + 1;
+}
+
 
 /* ---------------------------------
  *  COMMS FUNCTIONS
@@ -189,7 +210,33 @@ void handshakeResponse() {
   
   // Send response out
   Serial.write(sendBuffer, PACKET_SIZE);
+  updateLastPacketSent();
 }
+
+// livenessResponse prepares the buffer to send out a liveness packet, so that the receiver can be aware of the Bluno's connection
+void livenessResponse() {
+  // Pre-process
+  clearSendBuffer();
+  uint8_t* buf = sendBuffer;
+
+  // Fill different sections of the buffer
+  buf = addLongToBuffer(buf, calculateTimestamp());
+  buf = addIMUDataToBuffer(buf, 0, -0, 32767, -32768, 100, -100); // Arbitrary values to verify signed transmission integrity
+
+  uint8_t* partial = addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
+  buf = setLivenessPacketTypeToBuffer(partial);
+
+  // Perform encryption
+  encryptAES(sendBuffer);
+
+  // Calculate and fill in checksum
+  setChecksum();
+
+  // Send response out
+  Serial.write(sendBuffer, PACKET_SIZE);
+  updateLastPacketSent();
+}
+
 
 
 // dataResponse prepares the data to be sent out
@@ -216,6 +263,7 @@ void dataResponse(int16_t x, int16_t y, int16_t z, int16_t pitch, int16_t roll, 
 
   // Send response out
   Serial.write(sendBuffer, PACKET_SIZE);
+  updateLastPacketSent();
 }
 
 
