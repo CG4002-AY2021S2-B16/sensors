@@ -10,6 +10,7 @@ extern const byte AESKeyStageOne[];
 extern const byte AESKeyStageTwo[];
 
 void resetTimeOffset();
+bool checkLivenessPacketRequired();
 uint32_t calculateTimestamp();
 void clearSendBuffer();
 void setChecksum();
@@ -21,6 +22,7 @@ uint8_t* addMuscleSensorDataToBuffer(uint8_t* next, uint16_t ms_val);
 uint8_t* setDataPacketTypeToBuffer(uint8_t* next);
 uint8_t* setAckPacketTypeToBuffer(uint8_t* next);
 void handshakeResponse();
+void livenessResponse();
 void dataResponse(int16_t x, int16_t y, int16_t z, int16_t pitch, int16_t yaw, int16_t roll);
 void receiveData();
 
