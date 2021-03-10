@@ -38,14 +38,17 @@ void readEMGData(uint16_t sensorReading)
 
   totalSensorVal += actualSensorVal;
   totalSquaredSensorVal += (actualSensorVal * actualSensorVal);
-  maxSensorVal = (actualSensorVal > maxSensorVal) ? actualSensorVal : maxSensorVal;
+  maxSensorVal = (actualSensorVal > maxSensorVal)
+                     ? actualSensorVal
+                     : maxSensorVal;
 
   ++sampleCount;
 }
 
-void processEMG(double *maxSensorValue, double *meanSensorValue, double *rmsSensorValue, double *meanSensorFrequency)
+void processEMG(double *maxSensorValue, double *meanSensorValue,
+                double *rmsSensorValue, double *meanSensorFrequency)
 {
-  computeFFT();
+  *meanSensorFrequency = computeFFT();
   *meanSensorValue = totalSensorVal / (EMG_SAMPLE_SIZE * 1.0);
   *rmsSensorValue = sqrt(totalSquaredSensorVal / (EMG_SAMPLE_SIZE * 1.0));
   *maxSensorValue = maxSensorVal;
@@ -83,14 +86,13 @@ double computeFFT()
   long freqAndPowerSpecSum = 0;
   long powerSpecSum = 0;
 
-  // for (int i = 0; i < EMG_SAMPLE_SIZE / 2; i++)
-  // {
-  //   unsigned int powerSpec = vReal[i] * vReal[i];
-  //   freqAndPowerSpecSum += powerSpec * freqArr[i];
-  //   powerSpecSum += powerSpec;
-  // }
+  for (int i = 0; i < EMG_SAMPLE_SIZE / 2; i++)
+  {
+    unsigned int powerSpec = vReal[i] * vReal[i];
+    freqAndPowerSpecSum += powerSpec * freqArr[i];
+    powerSpecSum += powerSpec;
+  }
 
-  return 0;
-  // double calculatedMAF = (freqAndPowerSpecSum * 1.0) / (powerSpecSum * 1.0);
-  // return calculatedMAF;
+  double calculatedMAF = (freqAndPowerSpecSum * 1.0) / (powerSpecSum * 1.0);
+  return calculatedMAF;
 }
