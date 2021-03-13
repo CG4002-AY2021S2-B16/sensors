@@ -5,7 +5,7 @@
 #include "MPU6050.h"
 #include "CommsInt.h"
 
-#define EMG_SENSOR_MODE true // set true for EMG beetle
+#define EMG_SENSOR_MODE false // set true for EMG beetle
 
 #define ONBOARD_LED 13
 #define EMG_PIN A0
