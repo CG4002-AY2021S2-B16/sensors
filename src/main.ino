@@ -5,6 +5,8 @@
 #include "MPU6050.h"
 #include "CommsInt.h"
 
+#define EMG_SENSOR_MODE true // set true for EMG beetle
+
 #define ONBOARD_LED 13
 #define EMG_PIN A0
 #define IMU_INT_PIN A1
@@ -79,13 +81,18 @@ void loop()
   }
   else if (handshake_done)
   {
-    imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
-    if (isMotionDetected) {
-      dataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
-    } else if (checkLivenessPacketRequired()) {
+    if (checkLivenessPacketRequired()) {
       livenessResponse();
+    } else if (EMG_SENSOR_MODE) {
+      // <-- Add in EMGdataResponse code here -->
+      EMGdataResponse(0.00, 314.26, -527.984231); // dummy values for testing
+      delay(128); // There should not be more than a (small << 128) delay on integrated code, because delay also comes from EMG sampling.
+    } else {
+      imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
+      if (isMotionDetected) {
+        IMUdataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
+        delay(20);
+      }
     }
   }
-
-  delay(20);
 }
