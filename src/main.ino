@@ -16,7 +16,7 @@
 #define RAW_TO_DEG_S_2 (float)__SHRT_MAX__ * 1000.
 
 #define ZERO_MOTION_THRESHOLD 8 // threshold = value * 2m
-#define ZERO_MOTION_DURATION 5  // duration = value * 64ms
+#define ZERO_MOTION_DURATION 30  // duration = value * 64ms
 
 MPU6050 imuSensor;
 
