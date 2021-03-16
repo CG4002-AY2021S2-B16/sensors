@@ -29,10 +29,14 @@ void setup()
 
   // Indicate the end of initializing
   digitalWrite(ONBOARD_LED, LOW);
+
+  Serial.begin(115200);
+  delay(1000);
 }
 
 void loop()
 {
+  receiveData();
   readEMGData(analogRead(EMG_PIN));
   if (new_handshake_req)
   {
