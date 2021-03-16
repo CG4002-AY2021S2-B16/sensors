@@ -41,9 +41,14 @@ void setup()
   imuSensor.initialize();
   if (imuSensor.testConnection())
   {
-    // Calibrate IMU with 600 readings
-    imuSensor.CalibrateAccel(6);
-    imuSensor.CalibrateGyro(6);
+    // Edit in values based on bluno number
+  imuSensor.setXAccelOffset(-1270);
+  imuSensor.setYAccelOffset(-6598);
+  imuSensor.setZAccelOffset(974);
+  imuSensor.setXGyroOffset(-46);
+  imuSensor.setYGyroOffset(-17);
+  imuSensor.setZGyroOffset(-25);
+
     // Set IMU range
     imuSensor.setFullScaleAccelRange(ACCEL_RANGE);
     imuSensor.setFullScaleGyroRange(GYRO_RANGE);
