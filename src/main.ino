@@ -58,7 +58,7 @@ void setup()
 
     digitalWrite(ONBOARD_LED, LOW);
   }
-  else
+  else // Error connecting with MPU
   {
     for (;;)
     {
