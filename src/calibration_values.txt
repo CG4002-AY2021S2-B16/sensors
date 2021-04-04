@@ -12,7 +12,7 @@ imuSensor.setZGyroOffset(13);
 """""
 2
 """""
-imuSensor.setXAccelOffset(--4580);
+imuSensor.setXAccelOffset(-4580);
 imuSensor.setYAccelOffset(-653);
 imuSensor.setZAccelOffset(838);
 imuSensor.setXGyroOffset(34);
