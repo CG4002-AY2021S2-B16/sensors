@@ -17,14 +17,19 @@
 #define RAW_TO_MS_2 (float)__SHRT_MAX__ * 9.81 * 8
 #define RAW_TO_DEG_S_2 (float)__SHRT_MAX__ * 1000.
 
-#define ZERO_MOTION_THRESHOLD 8 // threshold = value * 2m
-#define ZERO_MOTION_DURATION 30  // duration = value * 64ms
+#define ZERO_MOTION_THRESHOLD 3 // threshold = value * 2m
+#define ZERO_MOTION_DURATION 15  // duration = value * 64ms
+
+#define GYRO_X_THRESHOLD 500
 
 MPU6050 imuSensor;
 
 int16_t accelX, accelY, accelZ;
 int16_t gyroX, gyroY, gyroZ;
 bool isMotionDetected;
+bool isShiftDetected;
+
+bool getIsShiftDetected(int16_t gyro_val);
 
 void setup()
 {
@@ -91,10 +96,18 @@ void loop()
       delay(128); // There should not be more than a (small << 128) delay on integrated code, because delay also comes from EMG sampling.
     } else {
       imuSensor.getMotion6(&accelX, &accelY, &accelZ, &gyroX, &gyroY, &gyroZ);
-      if (isMotionDetected) {
+      isShiftDetected = getIsShiftDetected(gyroX);
+
+      if (isMotionDetected || isShiftDetected) {
         IMUdataResponse(accelX, accelY, accelZ, gyroX, gyroY, gyroZ);
         delay(20);
       }
     }
   }
+}
+
+
+bool getIsShiftDetected(int16_t gyro_val)
+{
+  return (gyro_val > GYRO_X_THRESHOLD || gyro_val < -GYRO_X_THRESHOLD);
 }
