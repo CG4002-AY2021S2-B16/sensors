@@ -60,9 +60,13 @@ void setup()
   }
   else
   {
-    imuSensor.CalibrateAccel(10);
-    imuSensor.CalibrateGyro(10);
-    digitalWrite(ONBOARD_LED, LOW);
+    for (;;)
+    {
+      digitalWrite(ONBOARD_LED, HIGH);
+      delay(500);
+      digitalWrite(ONBOARD_LED, LOW);
+      delay(500);
+    }
   }
 
   Serial.begin(115200);
