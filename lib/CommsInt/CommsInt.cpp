@@ -128,9 +128,9 @@ uint8_t* addIntToBuffer(uint8_t* start, uint16_t x) {
 }
 
 
-// addAbbreviatedLongToBuffer writes a 32-bit integer as 3 bytes to the buffer, skipping the most significant 8 bits
-// It uses little endian e.g. 0x0A1B2C3D -> 3D 2C 1B 0A
-// returns next location after filling in 4 bytes
+// addAbbreviatedLongToBuffer writes a 32-bit integer as 3 bytes to the buffer, discarding the most significant 8 bits
+// It uses little endian e.g. 0x0A1B2C3D -> 3D 2C 1B
+// returns next location after filling in 3 bytes
 uint8_t* addAbbreviatedLongToBuffer(uint8_t* start, uint32_t x) {
   for (int i = 0; i < 3; i++) {
     start[i] = (x >> (i * 8)) & 0xFF; 
