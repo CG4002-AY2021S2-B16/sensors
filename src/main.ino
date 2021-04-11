@@ -17,8 +17,10 @@
 #define RAW_TO_MS_2 (float)__SHRT_MAX__ * 9.81 * 8
 #define RAW_TO_DEG_S_2 (float)__SHRT_MAX__ * 1000.
 
-#define ZERO_MOTION_THRESHOLD 8 // threshold = value * 2m
-#define ZERO_MOTION_DURATION 30  // duration = value * 64ms
+#define ZERO_MOTION_THRESHOLD 3 // threshold = value * 2m
+#define ZERO_MOTION_DURATION 15  // duration = value * 64ms
+
+#define GYRO_X_THRESHOLD 1000
 
 MPU6050 imuSensor;
 
@@ -42,12 +44,12 @@ void setup()
   if (imuSensor.testConnection())
   {
     // Edit in values based on bluno number
-  imuSensor.setXAccelOffset(-1270);
-  imuSensor.setYAccelOffset(-6598);
-  imuSensor.setZAccelOffset(974);
-  imuSensor.setXGyroOffset(-46);
-  imuSensor.setYGyroOffset(-17);
-  imuSensor.setZGyroOffset(-25);
+imuSensor.setXAccelOffset(-524);
+imuSensor.setYAccelOffset(-1672);
+imuSensor.setZAccelOffset(-540);
+imuSensor.setXGyroOffset(168);
+imuSensor.setYGyroOffset(-43);
+imuSensor.setZGyroOffset(6);
 
     // Set IMU range
     imuSensor.setFullScaleAccelRange(ACCEL_RANGE);

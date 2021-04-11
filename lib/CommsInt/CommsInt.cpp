@@ -4,15 +4,16 @@
 #include "../Crypto/AES.h"
 
 // Packet Specification
-#define PACKET_SIZE 19
-#define MUSCLE_SENSOR_INVALID_VAL 1023 // TO BE DEPRECATED
+#define PACKET_SIZE 17
 
 // Packet masks
-#define DESIGNATE_IMU_PACKET_MASK 0x0C // 0b0000 1100, To be ORed with
-#define DESIGNATE_EMG_PACKET_MASK 0x08 // 0b0000 1000, To be ORed with
+#define DESIGNATE_ACK_PACKET_MASK 0x00  // 0b0000 0000, To be ORed with
+#define DESIGNATE_IMU_PACKET_MASK 0x40  // 0b0100 0000, To be ORed with
+#define DESIGNATE_EMG_PACKET_MASK 0x80  // 0b1000 0000, To be ORed with
+#define DESIGNATE_LIVENESS_PACKET_MASK 0xC0 // 0b1111 0011, To be ORed with
 
-#define DESIGNATE_ACK_PACKET_MASK 0xF3  // 0b1111 0011, To be ANDed with
-#define DESIGNATE_LIVENESS_PACKET_MASK 0x04 // To be ORed with
+// Padding mask
+#define PADDING_MASK 0xAA
 
 // Handshake constants
 #define HANDSHAKE_INIT 'A'
@@ -26,11 +27,7 @@
 AESTiny128 aesTinyOne;
 BlockCipher *cipherOne = &aesTinyOne;
 
-AESTiny128 aesTinyTwo;
-BlockCipher *cipherTwo = &aesTinyTwo;
-
 const byte AESKeyStageOne[AES_BLOCK_SIZE] = {0x2A, 0x46, 0x2D, 0x4A, 0x61, 0x4E, 0x64, 0x52, 0x67, 0x55, 0x6A, 0x58, 0x6E, 0x32, 0x72, 0x35};
-const byte AESKeyStageTwo[AES_BLOCK_SIZE] = {0x7A, 0x24, 0x43, 0x26, 0x46, 0x29, 0x4A, 0x40, 0x4E, 0x63, 0x52, 0x66, 0x55, 0x6A, 0x57, 0x6E};
 
 // Define global variables
 uint8_t receivedChar;
@@ -76,7 +73,6 @@ bool checkLivenessPacketRequired() {
 void prepareAES() {
   crypto_feed_watchdog();
   cipherOne->setKey(AESKeyStageOne, AES_BLOCK_SIZE);
-  cipherTwo->setKey(AESKeyStageTwo, AES_BLOCK_SIZE);
 }
 
 // encryptAES encrypts sixteen bytes using AES-ECB
@@ -85,11 +81,6 @@ void encryptAES(uint8_t* start) {
   // Perform first encryption
   crypto_feed_watchdog();
   cipherOne->encryptBlock(start, start);
-
-  // Perform second encryption (currently, bytes 2 to 17 inclusive)
-  start += 2;
-  crypto_feed_watchdog();
-  cipherTwo->encryptBlock(start, start);
 }
 
 
@@ -117,6 +108,15 @@ void setChecksum() {
 }
 
 
+// addPaddingToBuffer takes in an input num_bytes and adds num_bytes of
+// padding to the buffer. The padding consists of alternating ones and zeros.
+void addPaddingToBuffer(uint8_t* start, uint8_t num_bytes) {
+  for (int i = 0; i < num_bytes; i++) {
+    start[i] = PADDING_MASK;
+  }
+}
+
+
 // addIntToBuffer writes an integer as 2 bytes to the buffer
 // It uses little endian e.g. 0x1A0B -> 0B 1A
 // returns next location after filling in 2 bytes
@@ -128,14 +128,14 @@ uint8_t* addIntToBuffer(uint8_t* start, uint16_t x) {
 }
 
 
-// addLongToBuffer writes a 32-bit integer as 4 bytes to the buffer
+// addAbbreviatedLongToBuffer writes a 32-bit integer as 3 bytes to the buffer, skipping the most significant 8 bits
 // It uses little endian e.g. 0x0A1B2C3D -> 3D 2C 1B 0A
 // returns next location after filling in 4 bytes
-uint8_t* addLongToBuffer(uint8_t* start, uint32_t x) {
-  for (int i = 0; i < 4; i++) {
+uint8_t* addAbbreviatedLongToBuffer(uint8_t* start, uint32_t x) {
+  for (int i = 0; i < 3; i++) {
     start[i] = (x >> (i * 8)) & 0xFF; 
   }
-  return start + 4;
+  return start + 3;
 }
 
 
@@ -173,15 +173,6 @@ uint8_t* addEMGDataToBuffer(uint8_t* next, float MAV, float RMS, float MNF) {
 }
 
 
-// TO BE DEPRECATED
-//addMuscleSensorDataToBuffer adds 10-bit Muscle Sensor data to the buffer
-uint8_t* addMuscleSensorDataToBuffer(uint8_t* next, uint16_t ms_val) {
-  next[0] = ms_val & 0xFF;
-  next[1] = (ms_val >> 8) & 0xFF;
-  return next + 1; // returns the partially filled byte in this case
-}
-
-
 // setIMUPacketTypeToBuffer adds 2-bit packet type data to the buffer to designate as IMU data packet
 uint8_t* setIMUPacketTypeToBuffer(uint8_t* next) {
   next[0] |= DESIGNATE_IMU_PACKET_MASK;
@@ -198,7 +189,7 @@ uint8_t* setEMGPacketTypeToBuffer(uint8_t* next) {
 
 // setAckPacketTypeToBuffer adds 2-bit packet type data to the buffer to designate as ack packet
 uint8_t* setAckPacketTypeToBuffer(uint8_t* next) {
-  next[0] &= DESIGNATE_ACK_PACKET_MASK;
+  next[0] |= DESIGNATE_ACK_PACKET_MASK;
   return next + 1;
 }
 
@@ -219,24 +210,23 @@ void handshakeResponse() {
   // Pre-process
   clearSendBuffer();
   uint8_t* buf = sendBuffer;
-  
-  // Fill different sections of the buffer
-  buf = addLongToBuffer(buf, calculateTimestamp());
-  buf = addIMUDataToBuffer(buf, 0, -0, 32767, -32768, 100, -100); // Arbitrary values to verify signed int16 transmission integrity
 
-  uint8_t* partial = addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
-  buf = setAckPacketTypeToBuffer(partial);
+  // Fill different sections of the buffer
+  buf = setAckPacketTypeToBuffer(buf);
+  buf = addAbbreviatedLongToBuffer(buf, calculateTimestamp());
+  addPaddingToBuffer(buf, 12);
 
   // Perform encryption
   encryptAES(sendBuffer);
 
   // Calculate and fill in checksum
   setChecksum();
-  
+
   // Send response out
   Serial.write(sendBuffer, PACKET_SIZE);
   updateLastPacketSent();
 }
+
 
 // livenessResponse prepares the buffer to send out a liveness packet, so that the receiver can be aware of the Bluno's connection
 void livenessResponse() {
@@ -245,11 +235,9 @@ void livenessResponse() {
   uint8_t* buf = sendBuffer;
 
   // Fill different sections of the buffer
-  buf = addLongToBuffer(buf, calculateTimestamp());
-  buf = addIMUDataToBuffer(buf, 0, -0, 32767, -32768, 100, -100); // Arbitrary values to verify signed transmission integrity
-
-  uint8_t* partial = addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL);
-  buf = setLivenessPacketTypeToBuffer(partial);
+  buf = setLivenessPacketTypeToBuffer(buf);
+  buf = addAbbreviatedLongToBuffer(buf, calculateTimestamp());
+  addPaddingToBuffer(buf, 12);
 
   // Perform encryption
   encryptAES(sendBuffer);
@@ -274,11 +262,9 @@ void EMGdataResponse(float MAV, float RMS, float MNF) {
   uint8_t* buf = sendBuffer;
 
   // Fill different sections of the buffer
-  buf = addLongToBuffer(buf, calculateTimestamp());
+  buf = setEMGPacketTypeToBuffer(buf);
+  buf = addAbbreviatedLongToBuffer(buf, calculateTimestamp());
   buf = addEMGDataToBuffer(buf, MAV, RMS, MNF);
-
-  uint8_t* partial = addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL); // TO BE DEPRECATED
-  buf = setEMGPacketTypeToBuffer(partial);
 
   // Perform encryption
   encryptAES(sendBuffer);
@@ -300,13 +286,11 @@ void IMUdataResponse(int16_t x, int16_t y, int16_t z, int16_t pitch, int16_t rol
   // Pre-process
   clearSendBuffer();
   uint8_t* buf = sendBuffer;
-  
-  // Fill different sections of the buffer
-  buf = addLongToBuffer(buf, calculateTimestamp());
-  buf = addIMUDataToBuffer(buf, x, y, z, pitch, roll, yaw);
 
-  uint8_t* partial = addMuscleSensorDataToBuffer(buf, MUSCLE_SENSOR_INVALID_VAL); // TO BE DEPRECATED
-  buf = setIMUPacketTypeToBuffer(partial);
+  // Fill different sections of the buffer
+  buf = setIMUPacketTypeToBuffer(buf);
+  buf = addAbbreviatedLongToBuffer(buf, calculateTimestamp());
+  buf = addIMUDataToBuffer(buf, x, y, z, pitch, roll, yaw);
 
   // Perform encryption
   encryptAES(sendBuffer);
