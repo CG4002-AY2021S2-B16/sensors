@@ -17,7 +17,7 @@
 #define RAW_TO_MS_2 (float)__SHRT_MAX__ * 9.81 * 8
 #define RAW_TO_DEG_S_2 (float)__SHRT_MAX__ * 1000.
 
-#define ZERO_MOTION_THRESHOLD 3 // threshold = value * 2m
+#define ZERO_MOTION_THRESHOLD 4 // threshold = value * 2m
 #define ZERO_MOTION_DURATION 15  // duration = value * 64ms
 
 #define GYRO_X_THRESHOLD 500
