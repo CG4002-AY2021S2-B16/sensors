@@ -12,22 +12,22 @@ imuSensor.setZGyroOffset(13);
 """""
 2
 """""
-imuSensor.setXAccelOffset(--4580);
-imuSensor.setYAccelOffset(-653);
-imuSensor.setZAccelOffset(838);
-imuSensor.setXGyroOffset(34);
-imuSensor.setYGyroOffset(-61);
+imuSensor.setXAccelOffset(-4568);
+imuSensor.setYAccelOffset(-584);
+imuSensor.setZAccelOffset(811);
+imuSensor.setXGyroOffset(31);
+imuSensor.setYGyroOffset(-57);
 imuSensor.setZGyroOffset(-7);
 
 """""
 3
 """""
-imuSensor.setXAccelOffset(-1270);
-imuSensor.setYAccelOffset(-6598);
-imuSensor.setZAccelOffset(974);
-imuSensor.setXGyroOffset(-46);
-imuSensor.setYGyroOffset(-17);
-imuSensor.setZGyroOffset(-25);
+imuSensor.setXAccelOffset(-940);
+imuSensor.setYAccelOffset(-6446);
+imuSensor.setZAccelOffset(1001);
+imuSensor.setXGyroOffset(-57);
+imuSensor.setYGyroOffset(-13);
+imuSensor.setZGyroOffset(-19);
 
 """""
 4

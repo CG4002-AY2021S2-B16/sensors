@@ -532,9 +532,9 @@ ifndef AVR_TOOLS_DIR
             ifndef AVRDUDE
                 ifeq ($(shell expr $(ARDUINO_VERSION) '>' 157), 1)
                     # 1.5.8 has different location than all prior versions!
-                    AVRDUDE = $(AVR_TOOLS_DIR)/bin/avrdude
+                    AVRDUDE = $(AVR_TOOLS_DIR)/avrdude
                 else
-                    AVRDUDE = $(AVR_TOOLS_DIR)/../avrdude
+                    AVRDUDE = $(AVR_TOOLS_DIR)/avrdude
                 endif
             endif
 
@@ -542,7 +542,7 @@ ifndef AVR_TOOLS_DIR
                 ifeq ($(shell expr $(ARDUINO_VERSION) '>' 157), 1)
                     AVRDUDE_CONF = $(AVR_TOOLS_DIR)/etc/avrdude.conf
                 else
-                    AVRDUDE_CONF = $(AVR_TOOLS_DIR)/../avrdude.conf
+                    AVRDUDE_CONF = /etc/avrdude.conf
                 endif
             endif
 
@@ -581,7 +581,7 @@ else
         ifeq ($(shell expr $(ARDUINO_VERSION) '>' 157), 1)
             AVRDUDE_CONF = $(AVR_TOOLS_DIR)/etc/avrdude.conf
         else
-            AVRDUDE_CONF = $(AVR_TOOLS_DIR)/../avrdude.conf
+            AVRDUDE_CONF = /etc/avrdude.conf
         endif
     endif
 
